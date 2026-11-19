@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halı Saçak Maliyet Hesaplama Programı - UserForm1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #1e293b;
+            max-width: 100%;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* iOS Safari otomatik yakınlaştırma (auto-zoom) engellemek için minimum 16px */
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+        /* Classic UserForm3D / Crisp Office Styling */
+        .userform-window {
+            background: linear-gradient(145deg, #2b394a 0%, #1b2634 50%, #2c3e50 100%);
+            border: 1px solid #64748b;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+        }
+        .userform-titlebar {
+            background: #ffffff;
+            color: #0f172a;
+            border-bottom: 1px solid #cbd5e1;
+        }
+        .panel-left {
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+        }
+        .panel-mid, .panel-right {
+            background-color: #cbd5e1;
+            border: 1px solid #e2e8f0;
+        }
+        .input-vb {
+            background-color: #e2e8f0;
+            border-top: 2px solid #64748b;
+            border-left: 2px solid #64748b;
+            border-right: 1px solid #ffffff;
+            border-bottom: 1px solid #ffffff;
+            color: #0f172a;
+            min-height: 46px;
+            transition: all 0.15s ease;
+        }
+        .input-vb:focus {
+            background-color: #ffffff;
+            outline: 2px solid #3b82f6;
+        }
+        .btn-vb {
+            background-color: #f8fafc;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #64748b;
+            border-bottom: 2px solid #64748b;
+            min-height: 48px;
+            transition: transform 0.08s ease, background-color 0.15s ease;
+        }
+        .btn-vb:hover {
+            background-color: #ffffff;
+        }
+        .btn-vb:active {
+            transform: scale(0.98);
+            border-top: 2px solid #64748b;
+            border-left: 2px solid #64748b;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+        }
+        .btn-vb-blue {
+            background-color: #4f86f7;
+            color: #ffffff;
+            border-top: 2px solid #93c5fd;
+            border-left: 2px solid #93c5fd;
+            border-right: 2px solid #1e3a8a;
+            border-bottom: 2px solid #1e3a8a;
+            min-height: 48px;
+        }
+        .btn-vb-blue:hover {
+            background-color: #3b76f6;
+        }
+        .result-box {
+            background-color: #f8fafc;
+            border: 1px solid #94a3b8;
+        }
+        /* Number input arrows cleanup */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 px-2.5 py-3 sm:p-5">
+
+    <!-- Bildirim Mesaj Kutusu (alert() yerine) -->
+    <div id="toastMessage" class="fixed top-3 left-3 right-3 sm:left-auto sm:right-4 z-50 hidden transform transition-all duration-300 sm:max-w-sm">
+        <div class="bg-slate-900/95 backdrop-blur text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-3">
+            <span id="toastIcon" class="text-emerald-400 font-bold text-lg shrink-0">✓</span>
+            <p id="toastText" class="text-sm font-medium leading-snug"></p>
+        </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto space-y-4 sm:space-y-6 w-full">
+
+        <!-- ANA USERFORM1 PENCERESİ -->
+        <div class="userform-window rounded-xl overflow-hidden w-full">
+            <!-- Pencere Başlık Çubuğu -->
+            <div class="userform-titlebar px-3 sm:px-4 py-2.5 flex items-center justify-between select-none">
+                <div class="flex items-center gap-2 min-w-0">
+                    <span class="w-3 h-3 rounded-sm bg-blue-600 shrink-0"></span>
+                    <span class="font-bold text-xs sm:text-sm tracking-tight text-slate-800 truncate">UserForm1 — Halı Saçak Hesaplama</span>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[11px] font-bold">Mobil Uyumlu</span>
+                    <button onclick="resetForm()" title="Formu Sıfırla" class="hover:bg-red-500 hover:text-white w-8 h-8 flex items-center justify-center rounded transition-colors font-bold text-slate-600">✕</button>
+                </div>
+            </div>
+
+            <!-- Form İçerik Alanı (Mobilde Tek Sütun, Masaüstünde 3 Sütun) -->
+            <div class="p-3 sm:p-5">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4 items-stretch">
+
+                    <!-- 1. SÜTUN: VERİ GİRİŞİ (Sol Panel) -->
+                    <fieldset class="lg:col-span-5 panel-left rounded-lg p-3.5 sm:p-4 shadow-inner flex flex-col justify-between min-w-0">
+                        <legend class="px-2.5 py-0.5 text-xs font-extrabold tracking-wider text-slate-700 uppercase bg-white rounded border border-slate-300">
+                            VERİ GİRİŞİ
+                        </legend>
+
+                        <div class="space-y-3.5 mt-1">
+                            <!-- ÜRÜN EBATI -->
+                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-1 sm:gap-2 items-center">
+                                <label for="urunEbati" class="sm:col-span-5 text-xs font-extrabold text-slate-900 uppercase">
+                                    ÜRÜN EBATI
+                                </label>
+                                <div class="sm:col-span-7">
+                                    <select id="urunEbati" onchange="onEbatChange()" class="w-full input-vb rounded-lg px-3 py-2 font-bold text-slate-900 cursor-pointer">
+                                        <!-- JS ile doldurulacak -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- ADET (+/- Dokunmatik Butonlu) -->
+                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-1 sm:gap-2 items-center">
+                                <label for="adet" class="sm:col-span-5 text-xs font-extrabold text-slate-900 uppercase">
+                                    ADET
+                                </label>
+                                <div class="sm:col-span-7 flex items-center gap-1.5">
+                                    <button type="button" onclick="changeAdet(-1)" aria-label="Adet Azalt" class="btn-vb w-12 h-[46px] rounded-lg font-extrabold text-xl text-slate-800 flex items-center justify-center shrink-0 select-none">−</button>
+                                    <input type="number" inputmode="numeric" id="adet" value="1" min="1" step="1" oninput="hesapla()" class="w-full input-vb rounded-lg px-2 py-2 text-center font-extrabold text-slate-900 min-w-0">
+                                    <button type="button" onclick="changeAdet(1)" aria-label="Adet Artır" class="btn-vb w-12 h-[46px] rounded-lg font-extrabold text-xl text-slate-800 flex items-center justify-center shrink-0 select-none">+</button>
+                                </div>
+                            </div>
+
+                            <!-- KULLANILAN SAÇAK UZUNLUĞU -->
+                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-1 sm:gap-2 items-center">
+                                <label for="sacakUzunluguCm" class="sm:col-span-5 text-xs font-extrabold text-slate-900 uppercase leading-tight">
+                                    KULLANILAN SAÇAK UZUNLUĞU <span class="text-[11px] font-semibold text-slate-600 sm:block">(Birim / cm)</span>
+                                </label>
+                                <div class="sm:col-span-7">
+                                    <input type="number" inputmode="decimal" id="sacakUzunluguCm" step="1" min="0" oninput="hesapla()" class="w-full input-vb rounded-lg px-3 py-2 font-bold text-slate-900">
+                                </div>
+                            </div>
+
+                            <!-- KUR VE KG FİYATI (Mobilde Yan Yana 2 Kolon - Yer Tasarrufu) -->
+                            <div class="grid grid-cols-2 sm:grid-cols-1 gap-2.5 sm:gap-3.5">
+                                <!-- MERKEZ BANKASI DOLAR KURU -->
+                                <div class="grid grid-cols-1 sm:grid-cols-12 gap-1 sm:gap-2 items-center">
+                                    <label for="dolarKuru" class="sm:col-span-5 text-[11px] sm:text-xs font-extrabold text-slate-900 uppercase leading-tight">
+                                        DOLAR KURU (₺)
+                                    </label>
+                                    <div class="sm:col-span-7">
+                                        <input type="number" inputmode="decimal" id="dolarKuru" value="50.47" step="0.01" min="0" oninput="hesapla()" class="w-full input-vb rounded-lg px-3 py-2 font-bold italic text-slate-900">
+                                    </div>
+                                </div>
+
+                                <!-- SAÇAK KG FİYATI $ -->
+                                <div class="grid grid-cols-1 sm:grid-cols-12 gap-1 sm:gap-2 items-center">
+                                    <label for="sacakKgFiyati" class="sm:col-span-5 text-[11px] sm:text-xs font-extrabold text-slate-900 uppercase leading-tight">
+                                        SAÇAK KG FİYATI ($)
+                                    </label>
+                                    <div class="sm:col-span-7">
+                                        <input type="number" inputmode="decimal" id="sacakKgFiyati" value="8" step="0.1" min="0" oninput="hesapla()" class="w-full input-vb rounded-lg px-3 py-2 font-bold text-slate-900">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alt Bilgi Notu -->
+                        <div class="mt-3.5 pt-2.5 border-t border-slate-300 flex flex-wrap items-center justify-between gap-1 text-xs text-slate-600">
+                            <span>Gramaj: <strong id="infoGramaj" class="text-slate-900">0,045 kg/mt (45 gr/m)</strong></span>
+                            <span>Alan: <strong id="infoAlan" class="text-slate-900">0,60 m²</strong></span>
+                        </div>
+                    </fieldset>
+
+                    <!-- 2. SÜTUN: SAÇAK TİPİ VE İŞLEM BUTONLARI (Orta Panel) -->
+                    <div class="lg:col-span-3 flex flex-col justify-between gap-3 min-w-0">
+                        <!-- SAÇAK TİPİ GRUBU -->
+                        <fieldset class="panel-mid rounded-lg p-3 sm:p-3.5 shadow-inner">
+                            <legend class="px-2.5 py-0.5 text-xs font-extrabold tracking-wider text-slate-900 uppercase bg-white rounded border border-slate-400">
+                                SAÇAK TİPİ
+                            </legend>
+                            <div class="grid grid-cols-2 lg:grid-cols-1 gap-2 mt-1">
+                                <label class="flex items-center justify-center lg:justify-start gap-2 bg-slate-100 hover:bg-white p-3 rounded-lg border-2 border-slate-400 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 cursor-pointer transition-all select-none min-h-[48px]">
+                                    <input type="radio" name="sacakTipi" value="PONPON" checked onchange="onSacakTipiChange()" class="w-4 h-4 text-blue-600 focus:ring-blue-500 shrink-0">
+                                    <span class="text-xs font-extrabold text-slate-900 tracking-tight text-center lg:text-left">PONPON SAÇAK</span>
+                                </label>
+                                <label class="flex items-center justify-center lg:justify-start gap-2 bg-slate-100 hover:bg-white p-3 rounded-lg border-2 border-slate-400 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 cursor-pointer transition-all select-none min-h-[48px]">
+                                    <input type="radio" name="sacakTipi" value="KISA_SPOR" onchange="onSacakTipiChange()" class="w-4 h-4 text-blue-600 focus:ring-blue-500 shrink-0">
+                                    <span class="text-xs font-extrabold text-slate-900 tracking-tight text-center lg:text-left">KISA SPOR SAÇAK</span>
+                                </label>
+                            </div>
+                        </fieldset>
+
+                        <!-- BUTONLAR (Mobilde üstte 2'li, altta tam genişlik RAPORLA) -->
+                        <div class="grid grid-cols-2 lg:grid-cols-1 gap-2.5 flex-1 content-end">
+                            <button type="button" onclick="hesapla(true)" class="btn-vb rounded-lg py-3 px-3 font-extrabold text-xs sm:text-sm tracking-wide text-slate-900 uppercase shadow cursor-pointer">
+                                HESAPLA
+                            </button>
+                            <button type="button" onclick="resetForm()" class="btn-vb rounded-lg py-3 px-3 font-extrabold text-xs sm:text-sm tracking-wide text-slate-900 uppercase shadow cursor-pointer">
+                                TEMİZLE
+                            </button>
+                            <button type="button" onclick="raporaEkle()" class="col-span-2 lg:col-span-1 btn-vb-blue rounded-lg py-3.5 px-4 font-extrabold text-sm tracking-wide uppercase shadow cursor-pointer">
+                                + RAPORLA
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. SÜTUN: SONUÇ PANELİ (Sağ Panel) -->
+                    <fieldset class="lg:col-span-4 panel-right rounded-lg p-3.5 sm:p-4 shadow-inner flex flex-col justify-between min-w-0">
+                        <legend class="px-2.5 py-0.5 text-xs font-extrabold tracking-wider text-slate-900 uppercase bg-white rounded border border-slate-400">
+                            SONUÇ
+                        </legend>
+
+                        <div class="space-y-2.5 mt-1">
+                            <!-- KULLANILAN METRE UZUNLUK -->
+                            <div class="grid grid-cols-12 gap-2 items-center">
+                                <div class="col-span-5 text-[11px] sm:text-xs font-extrabold text-slate-900 uppercase leading-tight">
+                                    KULLANILAN METRE UZUNLUK
+                                </div>
+                                <div class="col-span-7 result-box rounded-lg px-3 py-1.5 text-right">
+                                    <div id="resMetre" class="text-xl sm:text-2xl font-extrabold text-slate-950 tracking-tight">0.00</div>
+                                    <div class="text-[10px] font-semibold text-slate-500">metre (mt)</div>
+                                </div>
+                            </div>
+
+                            <!-- TOPLAM GRAM / KG -->
+                            <div class="grid grid-cols-12 gap-2 items-center">
+                                <div class="col-span-5 text-[11px] sm:text-xs font-extrabold text-slate-900 uppercase leading-tight">
+                                    TOPLAM GRAM
+                                    <span class="block text-[10px] font-semibold text-slate-700 normal-case">(ve KG karşılığı)</span>
+                                </div>
+                                <div class="col-span-7 result-box rounded-lg px-3 py-1.5 text-right">
+                                    <div id="resGram" class="text-xl sm:text-2xl font-extrabold text-slate-950 tracking-tight">0.00</div>
+                                    <div id="resKgSub" class="text-[11px] font-bold text-blue-700">0.000 kg</div>
+                                </div>
+                            </div>
+
+                            <!-- TOPLAM ($) -->
+                            <div class="grid grid-cols-12 gap-2 items-center">
+                                <div class="col-span-5 text-[11px] sm:text-xs font-extrabold text-slate-900 uppercase leading-tight">
+                                    TOPLAM ($)
+                                </div>
+                                <div class="col-span-7 result-box rounded-lg px-3 py-1.5 text-right">
+                                    <div id="resDolar" class="text-xl sm:text-2xl font-extrabold text-slate-950 tracking-tight">0.00</div>
+                                    <div class="text-[10px] font-semibold text-slate-500">USD ($)</div>
+                                </div>
+                            </div>
+
+                            <!-- MALİYET (TL) -->
+                            <div class="grid grid-cols-12 gap-2 items-center">
+                                <div class="col-span-5 text-[11px] sm:text-xs font-extrabold text-slate-900 uppercase leading-tight">
+                                    MALİYET (TL)
+                                </div>
+                                <div class="col-span-7 result-box rounded-lg px-3 py-1.5 text-right border-emerald-500">
+                                    <div id="resMaliyetTl" class="text-xl sm:text-2xl font-extrabold text-emerald-800 tracking-tight">0.00</div>
+                                    <div class="text-[10px] font-semibold text-slate-500">Türk Lirası (₺)</div>
+                                </div>
+                            </div>
+
+                            <!-- M2 (TL) -->
+                            <div class="grid grid-cols-12 gap-2 items-center">
+                                <div class="col-span-5 text-[11px] sm:text-xs font-extrabold text-slate-900 uppercase leading-tight">
+                                    M2 (TL)
+                                </div>
+                                <div class="col-span-7 result-box rounded-lg px-3 py-1.5 text-right">
+                                    <div id="resM2Tl" class="text-xl sm:text-2xl font-extrabold text-indigo-900 tracking-tight">0.00</div>
+                                    <div id="resM2Sub" class="text-[10px] font-semibold text-slate-500">₺ / m²</div>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                </div>
+
+                <!-- HESAPLAMA FORMÜL DOĞRULAMA ŞERİDİ -->
+                <div class="mt-3.5 bg-slate-900/85 border border-slate-700 rounded-lg px-3.5 py-2.5 text-xs text-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                    <div class="flex flex-wrap items-center gap-1.5 break-words">
+                        <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 font-semibold shrink-0">Özet</span>
+                        <span id="formulaSummary" class="font-mono text-[11px] sm:text-xs text-slate-200 break-all sm:break-normal">Ebat seçildiğinde hesaplama adımları burada görünür.</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 shrink-0">* 0,045 ve 0,025 değerleri 1 mt için KG'dır.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ALT SEKMELİ YÖNETİM PANELİ (iPhone Ekranında Gereksiz Uzamayı ve Taşmayı Önler) -->
+        <div class="bg-white rounded-xl shadow-xl border border-slate-300 overflow-hidden w-full">
+            <!-- Sekme Başlıkları -->
+            <div class="grid grid-cols-2 bg-slate-200 border-b border-slate-300 p-1 gap-1">
+                <button type="button" id="tabBtnReport" onclick="switchBottomTab('report')" class="py-2.5 px-2 rounded-lg font-extrabold text-xs sm:text-sm uppercase tracking-tight bg-white text-blue-700 shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                    <span>📋 Rapor Listesi</span>
+                    <span id="reportCountBadge" class="bg-blue-100 text-blue-800 text-[11px] font-bold px-2 py-0.5 rounded-full">0</span>
+                </button>
+                <button type="button" id="tabBtnTable" onclick="switchBottomTab('table')" class="py-2.5 px-2 rounded-lg font-extrabold text-xs sm:text-sm uppercase tracking-tight text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                    <span>⚙️ Fiyat & Gramaj Tablosu</span>
+                </button>
+            </div>
+
+            <!-- SEKME 1: RAPORLAMA LİSTESİ -->
+            <div id="tabPanelReport" class="block">
+                <div class="bg-slate-50 px-3.5 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                    <p class="text-xs text-slate-600">Eklenen hesaplamalar burada toplanır.</p>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button onclick="exportReportCSV()" class="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+                            <span>📥</span> Excel / CSV İndir
+                        </button>
+                        <button onclick="clearReport()" class="bg-red-100 hover:bg-red-200 text-red-700 text-xs font-bold px-3 py-2.5 rounded-lg transition-colors cursor-pointer">
+                            Temizle
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MOBİL KART GÖRÜNÜMÜ (iPhone'da sıfır yatay taşma) -->
+                <div id="mobileReportCards" class="md:hidden divide-y divide-slate-200">
+                    <div class="p-6 text-center text-slate-400 text-xs">
+                        Henüz rapora eklenmiş kayıt yok. Yukarıdan <strong class="text-blue-600">+ RAPORLA</strong> butonuna dokunun.
+                    </div>
+                </div>
+                <div id="mobileReportSummary" class="hidden md:hidden bg-slate-100 p-3.5 border-t-2 border-slate-300 space-y-1.5 text-xs">
+                    <!-- JS ile dolacak -->
+                </div>
+
+                <!-- MASAÜSTÜ TABLO GÖRÜNÜMÜ -->
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-slate-800 text-white uppercase text-[11px] tracking-wider">
+                                <th class="py-2.5 px-3 border-r border-slate-700">#</th>
+                                <th class="py-2.5 px-3 border-r border-slate-700">Ürün Ebatı</th>
+                                <th class="py-2.5 px-3 border-r border-slate-700">Saçak Tipi</th>
+                                <th class="py-2.5 px-3 border-r border-slate-700 text-right">Adet</th>
+                                <th class="py-2.5 px-3 border-r border-slate-700 text-right">Alan (m²)</th>
+                                <th class="py-2.5 px-3 border-r border-slate-700 text-right">Saçak (mt)</th>
+                                <th class="py-2.5 px-3 border-r border-slate-700 text-right">Gram</th>
+                                <th class="py-2.5 px-3 border-r border-slate-700 text-right">KG</th>
+                                <th class="py-2.5 px-3 border-r border-slate-700 text-right">Kur (₺)</th>
+                                <th class="py-2.5 px-3 border-r border-slate-700 text-right">Toplam ($)</th>
+                                <th class="py-2.5 px-3 border-r border-slate-700 text-right">Maliyet (TL)</th>
+                                <th class="py-2.5 px-3 border-r border-slate-700 text-right">M2 (TL)</th>
+                                <th class="py-2.5 px-3 text-center">Sil</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody" class="divide-y divide-slate-200">
+                            <tr id="emptyReportRow">
+                                <td colspan="13" class="py-8 text-center text-slate-400 text-sm">
+                                    Henüz rapora eklenmiş bir hesaplama yok. Yukarıdaki formdan hesaplama yapıp <strong class="text-blue-600">+ RAPORLA</strong> butonuna tıklayın.
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot id="reportTableFoot" class="hidden bg-slate-100 font-extrabold text-slate-900 border-t-2 border-slate-400 text-sm">
+                            <tr>
+                                <td colspan="3" class="py-2.5 px-3 uppercase">GENEL TOPLAM / ORT.</td>
+                                <td id="footAdet" class="py-2.5 px-3 text-right">0</td>
+                                <td id="footAlan" class="py-2.5 px-3 text-right">0.00 m²</td>
+                                <td id="footMetre" class="py-2.5 px-3 text-right">0.00 mt</td>
+                                <td id="footGram" class="py-2.5 px-3 text-right">0.00 gr</td>
+                                <td id="footKg" class="py-2.5 px-3 text-right">0.000 kg</td>
+                                <td class="py-2.5 px-3 text-right text-slate-400">-</td>
+                                <td id="footDolar" class="py-2.5 px-3 text-right text-blue-700">$0.00</td>
+                                <td id="footTl" class="py-2.5 px-3 text-right text-emerald-700">0.00 ₺</td>
+                                <td id="footM2Tl" class="py-2.5 px-3 text-right text-indigo-700">0.00 ₺/m²</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SEKME 2: REFERANS VERİ TABLOSU (DÜZENLENEBİLİR) -->
+            <div id="tabPanelTable" class="hidden">
+                <div class="bg-slate-50 px-3.5 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                    <p class="text-xs text-slate-600">Değerleri düzenleyebilir veya yeni ebat ekleyebilirsiniz.</p>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button onclick="toggleNewRowForm()" class="flex-1 sm:flex-initial bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-lg shadow-sm transition-colors cursor-pointer">
+                            + Yeni Ebat Ekle
+                        </button>
+                        <button onclick="resetDefaultData()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-3 py-2.5 rounded-lg transition-colors cursor-pointer">
+                            Sıfırla
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Yeni Ebat Ekleme Formu (Gizli Başlar) -->
+                <div id="newRowContainer" class="hidden bg-blue-50 border-b border-blue-200 p-3.5">
+                    <div class="grid grid-cols-2 sm:grid-cols-6 gap-2.5 items-end">
+                        <div class="col-span-2">
+                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Ürün Ebatı (Örn: 160X230)</label>
+                            <input type="text" id="newEbat" placeholder="160X230" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 font-bold uppercase">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Saçak (cm)</label>
+                            <input type="number" inputmode="decimal" id="newUzunluk" placeholder="650" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Ponpon GR</label>
+                            <input type="number" inputmode="decimal" id="newPonponGr" value="0.045" step="0.001" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Kısa Spor GR</label>
+                            <input type="number" inputmode="decimal" id="newSporGr" value="0.025" step="0.001" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 font-bold">
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Ponpon / Spor ($)</label>
+                            <div class="flex gap-1.5">
+                                <input type="number" inputmode="decimal" id="newPonponUsd" value="8" step="0.1" class="w-1/2 bg-white border border-slate-300 rounded-lg px-2 py-2 font-bold" title="Ponpon KG $">
+                                <input type="number" inputmode="decimal" id="newSporUsd" value="2.5" step="0.1" class="w-1/2 bg-white border border-slate-300 rounded-lg px-2 py-2 font-bold" title="Kısa Spor KG $">
+                            </div>
+                        </div>
+                        <div class="col-span-2 sm:col-span-6">
+                            <button onclick="addNewProduct()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-2.5 px-4 rounded-lg shadow-sm cursor-pointer">
+                                Yeni Ebatı Kaydet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MOBİL DÜZENLENEBİLİR KART LİSTESİ (iPhone'da sıfır yatay taşma) -->
+                <div id="mobileMasterCards" class="md:hidden divide-y divide-slate-200 max-h-[520px] overflow-y-auto">
+                    <!-- JS ile doldurulacak -->
+                </div>
+
+                <!-- MASAÜSTÜ EXCEL GÖRÜNÜMLÜ TABLO -->
+                <div class="hidden md:block overflow-x-auto max-h-[460px]">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="sticky top-0 z-10 bg-slate-200 text-slate-900 font-extrabold uppercase border-b-2 border-slate-400">
+                            <tr>
+                                <th class="py-2 px-3 border-r border-slate-300">URUN EBATI</th>
+                                <th class="py-2 px-3 border-r border-slate-300 text-center">KULLANILAN SACAK UZUNLUGU (cm)</th>
+                                <th class="py-2 px-3 border-r border-slate-300 text-center">PONPON GR (kg/mt)</th>
+                                <th class="py-2 px-3 border-r border-slate-300 text-center">KISA SPOR GR (kg/mt)</th>
+                                <th class="py-2 px-3 border-r border-slate-300 text-center">PONPON KG $</th>
+                                <th class="py-2 px-3 border-r border-slate-300 text-center">KISA SPOR $</th>
+                                <th class="py-2 px-3 text-center">Alan (m²)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="masterTableBody" class="divide-y divide-slate-200 font-medium text-slate-800">
+                            <!-- JS ile doldurulacak -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 1. Görseldeki birebir başlangıç veri seti
+        const INITIAL_DATA = [
+            { ebat: "60X100", uzunluk: 290, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "80X120", uzunluk: 350, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "80X150", uzunluk: 395, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "80X300", uzunluk: 700, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "100X100", uzunluk: 350, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "100X200", uzunluk: 550, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "100X300", uzunluk: 500, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "100X150", uzunluk: 450, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "120X120", uzunluk: 395, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "120X160", uzunluk: 495, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "120X180", uzunluk: 500, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "150X150", uzunluk: 480, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "150X230", uzunluk: 630, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "100x100 DÜZ HALI", uzunluk: 210, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "80X150  DÜZ HALI", uzunluk: 175, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "150X230 DÜZ HALI", uzunluk: 315, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "200x300 DÜZ HALI", uzunluk: 415, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "250x350 DÜZ HALI", uzunluk: 515, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "300x400 DÜZ HALI", uzunluk: 615, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 },
+            { ebat: "250x400 DÜZ HALI", uzunluk: 465, ponponGr: 0.045, sporGr: 0.025, ponponUsd: 8, sporUsd: 2.5 }
+        ];
+
+        let productData = JSON.parse(localStorage.getItem('hali_sacak_verileri_v1')) || JSON.parse(JSON.stringify(INITIAL_DATA));
+        let reportList = [];
+        let lastCalculation = null;
+
+        // Alt Sekme Geçişi (Rapor Listesi / Fiyat Tablosu)
+        function switchBottomTab(tab) {
+            const panelReport = document.getElementById('tabPanelReport');
+            const panelTable = document.getElementById('tabPanelTable');
+            const btnReport = document.getElementById('tabBtnReport');
+            const btnTable = document.getElementById('tabBtnTable');
+
+            if (tab === 'report') {
+                panelReport.classList.remove('hidden');
+                panelTable.classList.add('hidden');
+                btnReport.className = 'py-2.5 px-2 rounded-lg font-extrabold text-xs sm:text-sm uppercase tracking-tight bg-white text-blue-700 shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer';
+                btnTable.className = 'py-2.5 px-2 rounded-lg font-extrabold text-xs sm:text-sm uppercase tracking-tight text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-1.5 cursor-pointer';
+            } else {
+                panelReport.classList.add('hidden');
+                panelTable.classList.remove('hidden');
+                btnTable.className = 'py-2.5 px-2 rounded-lg font-extrabold text-xs sm:text-sm uppercase tracking-tight bg-white text-blue-700 shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer';
+                btnReport.className = 'py-2.5 px-2 rounded-lg font-extrabold text-xs sm:text-sm uppercase tracking-tight text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-1.5 cursor-pointer';
+            }
+        }
+
+        // Adet +/- Butonları
+        function changeAdet(delta) {
+            const input = document.getElementById('adet');
+            const current = parseInt(input.value) || 0;
+            const next = Math.max(1, current + delta);
+            input.value = next;
+            hesapla();
+        }
+        // Alt Referans Veri Tablosunu ve Mobil Kartlarını Çiz
+        function renderMasterTable() {
+            const tbody = document.getElementById('masterTableBody');
+            const mobileContainer = document.getElementById('mobileMasterCards');
+            const selectedIdx = parseInt(document.getElementById('urunEbati').value) || 0;
+
+            tbody.innerHTML = '';
+            mobileContainer.innerHTML = '';
+
+            productData.forEach((item, idx) => {
+                const area = parseAreaM2(item.ebat);
+                const isSelected = idx === selectedIdx;
+
+                // Masaüstü Tablo Satırı
+                const tr = document.createElement('tr');
+                tr.className = isSelected ? 'bg-blue-50/90 font-semibold' : 'hover:bg-slate-50';
+
+                tr.innerHTML = `
+                    <td class="py-1.5 px-3 border-r border-slate-300 font-bold text-slate-900 cursor-pointer" onclick="selectFromTable(${idx})" title="Formda seçmek için tıklayın">
+                        ${isSelected ? '▶ ' : ''}${item.ebat}
+                    </td>
+                    <td class="py-1 px-2 border-r border-slate-300 text-center">
+                        <input type="number" value="${item.uzunluk}" step="1" onchange="updateMasterCell(${idx}, 'uzunluk', this.value)"
+                            class="w-20 text-center bg-transparent hover:bg-white focus:bg-white border border-transparent focus:border-blue-400 rounded px-1 py-0.5 font-semibold">
+                    </td>
+                    <td class="py-1 px-2 border-r border-slate-300 text-center">
+                        <input type="number" value="${item.ponponGr}" step="0.001" onchange="updateMasterCell(${idx}, 'ponponGr', this.value)"
+                            class="w-20 text-center bg-transparent hover:bg-white focus:bg-white border border-transparent focus:border-blue-400 rounded px-1 py-0.5">
+                    </td>
+                    <td class="py-1 px-2 border-r border-slate-300 text-center">
+                        <input type="number" value="${item.sporGr}" step="0.001" onchange="updateMasterCell(${idx}, 'sporGr', this.value)"
+                            class="w-20 text-center bg-transparent hover:bg-white focus:bg-white border border-transparent focus:border-blue-400 rounded px-1 py-0.5">
+                    </td>
+                    <td class="py-1 px-2 border-r border-slate-300 text-center">
+                        <input type="number" value="${item.ponponUsd}" step="0.1" onchange="updateMasterCell(${idx}, 'ponponUsd', this.value)"
+                            class="w-16 text-center bg-transparent hover:bg-white focus:bg-white border border-transparent focus:border-blue-400 rounded px-1 py-0.5">
+                    </td>
+                    <td class="py-1 px-2 border-r border-slate-300 text-center">
+                        <input type="number" value="${item.sporUsd}" step="0.1" onchange="updateMasterCell(${idx}, 'sporUsd', this.value)"
+                            class="w-16 text-center bg-transparent hover:bg-white focus:bg-white border border-transparent focus:border-blue-400 rounded px-1 py-0.5">
+                    </td>
+                    <td class="py-1.5 px-3 text-center text-slate-600 font-mono">
+                        ${area.toFixed(2)} m²
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                // Mobil Kart Görünümü (iPhone ekranına tam sığar)
+                const card = document.createElement('div');
+                card.className = `p-3.5 ${isSelected ? 'bg-blue-50/80' : 'bg-white'}`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between gap-2 mb-2.5">
+                        <button type="button" onclick="selectFromTable(${idx})" class="text-left font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
+                            ${isSelected ? '<span class="text-blue-600">▶</span>' : ''}
+                            <span>${item.ebat}</span>
+                            <span class="text-[11px] font-mono font-normal text-slate-500">(${area.toFixed(2)} m²)</span>
+                        </button>
+                        <button type="button" onclick="selectFromTable(${idx})" class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-md">
+                            Seç
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-xs">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Saçak (cm)</label>
+                            <input type="number" inputmode="decimal" value="${item.uzunluk}" step="1" onchange="updateMasterCell(${idx}, 'uzunluk', this.value)"
+                                class="w-full bg-slate-100 border border-slate-300 rounded px-2 py-1.5 font-bold text-slate-900">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Ponpon ($)</label>
+                            <input type="number" inputmode="decimal" value="${item.ponponUsd}" step="0.1" onchange="updateMasterCell(${idx}, 'ponponUsd', this.value)"
+                                class="w-full bg-slate-100 border border-slate-300 rounded px-2 py-1.5 font-bold text-slate-900">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">K.Spor ($)</label>
+                            <input type="number" inputmode="decimal" value="${item.sporUsd}" step="0.1" onchange="updateMasterCell(${idx}, 'sporUsd', this.value)"
+                                class="w-full bg-slate-100 border border-slate-300 rounded px-2 py-1.5 font-bold text-slate-900">
+                        </div>
+                    </div>
+                `;
+                mobileContainer.appendChild(card);
+            });
+        }
+
+        // ANA HESAPLAMA MOTORU (Birim Doğrulamalı)
+        function hesapla(notify = false) {
+            const idx = parseInt(document.getElementById('urunEbati').value) || 0;
+            const item = productData[idx];
+            if (!item) return;
+
+            const tip = getSelectedSacakTipi();
+            const birimKgPerMetre = tip === 'PONPON' ? item.ponponGr : item.sporGr; // 0.045 kg/mt veya 0.025 kg/mt
+            const birimGrPerMetre = birimKgPerMetre * 1000; // 45 gr/mt veya 25 gr/mt
+
+            const adet = Math.max(0, parseFloat(document.getElementById('adet').value) || 0);
+            const sacakCm = Math.max(0, parseFloat(document.getElementById('sacakUzunluguCm').value) || 0);
+            const dolarKuru = Math.max(0, parseFloat(document.getElementById('dolarKuru').value) || 0);
+            const kgFiyatUsd = Math.max(0, parseFloat(document.getElementById('sacakKgFiyati').value) || 0);
+
+            // 1. Kullanılan Metre Uzunluk = (Birim Saçak cm / 100) * Adet
+            const toplamMetre = (sacakCm / 100) * adet;
+
+            // 2. Toplam Ağırlık: Tablodaki 0,045 ve 0,025 değerleri metre başına KG'dır.
+            const toplamKg = toplamMetre * birimKgPerMetre;
+            const toplamGram = toplamKg * 1000; // Gerçek gram değeri (Örn: 2.90 mt * 45 gr = 130.50 gr)
+
+            // 3. Toplam ($) = Toplam KG * KG Dolar Fiyatı
+            const toplamDolar = toplamKg * kgFiyatUsd;
+
+            // 4. Maliyet (TL) = Toplam ($) * Dolar Kuru
+            const maliyetTl = toplamDolar * dolarKuru;
+
+            // 5. M2 (TL) = Toplam Maliyet (TL) / Toplam Halı Alanı (m²)
+            const birimAlanM2 = parseAreaM2(item.ebat);
+            const toplamAlanM2 = birimAlanM2 * adet;
+            const m2BasiTl = toplamAlanM2 > 0 ? (maliyetTl / toplamAlanM2) : 0;
+
+            // Arayüz Güncelleme
+            document.getElementById('infoGramaj').textContent = `${birimKgPerMetre.toFixed(3).replace('.', ',')} kg/mt (${birimGrPerMetre.toFixed(0)} gr/m)`;
+            document.getElementById('infoAlan').textContent = `${toplamAlanM2.toFixed(2).replace('.', ',')} m²`;
+
+            document.getElementById('resMetre').textContent = toplamMetre.toFixed(2);
+            document.getElementById('resGram').textContent = toplamGram.toFixed(2);
+            document.getElementById('resKgSub').textContent = `${toplamKg.toFixed(3)} kg (${birimKgPerMetre} kg/mt)`;
+            document.getElementById('resDolar').textContent = toplamDolar.toFixed(2);
+            document.getElementById('resMaliyetTl').textContent = maliyetTl.toFixed(2);
+            document.getElementById('resM2Tl').textContent = m2BasiTl.toFixed(2);
+            document.getElementById('resM2Sub').textContent = `Toplam ${toplamAlanM2.toFixed(2)} m² için ₺ / m²`;
+
+            document.getElementById('formulaSummary').textContent =
+                `${adet} adet × ${(sacakCm/100).toFixed(2)} mt = ${toplamMetre.toFixed(2)} mt | ${toplamMetre.toFixed(2)} mt × ${birimGrPerMetre} gr = ${toplamGram.toFixed(2)} gr (${toplamKg.toFixed(3)} kg) × $${kgFiyatUsd} = $${toplamDolar.toFixed(2)} × ${dolarKuru}₺ = ${maliyetTl.toFixed(2)}₺`;
+
+            lastCalculation = {
+                ebat: item.ebat,
+                sacakTipi: tip === 'PONPON' ? 'PONPON SAÇAK' : 'KISA SPOR SAÇAK',
+                adet,
+                toplamAlanM2,
+                toplamMetre,
+                toplamGram,
+                toplamKg,
+                dolarKuru,
+                toplamDolar,
+                maliyetTl,
+                m2BasiTl
+            };
+
+            if (notify) {
+                showToast(`${item.ebat} (${adet} adet) hesaplaması güncellendi.`);
+            }
+        }
+
+        // TEMİZLE Butonu İşlevi
+        function resetForm() {
+            document.getElementById('urunEbati').selectedIndex = 0;
+            document.getElementById('adet').value = 1;
+            document.getElementById('dolarKuru').value = 50.47;
+            document.getElementsByName('sacakTipi')[0].checked = true;
+            onEbatChange();
+            showToast('Form başlangıç değerlerine sıfırlandı.');
+        }
+
+        // RAPORLA Butonu İşlevi
+        function raporaEkle() {
+            hesapla(false);
+            if (!lastCalculation || lastCalculation.adet <= 0) {
+                showToast('Lütfen geçerli bir adet giriniz.', true);
+                return;
+            }
+            reportList.push({ ...lastCalculation, id: Date.now() });
+            renderReportTable();
+            showToast(`${lastCalculation.ebat} (${lastCalculation.adet} adet) rapora eklendi.`);
+        }
+
+        function removeReportItem(id) {
+            reportList = reportList.filter(r => r.id !== id);
+            renderReportTable();
+        }
+
+        function clearReport() {
+            reportList = [];
+            renderReportTable();
+            showToast('Rapor listesi temizlendi.');
+        }
+
+        function renderReportTable() {
+            const tbody = document.getElementById('reportTableBody');
+            const tfoot = document.getElementById('reportTableFoot');
+            const mobileCards = document.getElementById('mobileReportCards');
+            const mobileSummary = document.getElementById('mobileReportSummary');
+            const badge = document.getElementById('reportCountBadge');
+
+            badge.textContent = `${reportList.length}`;
+
+            if (reportList.length === 0) {
+                tbody.innerHTML = `
+                    <tr id="emptyReportRow">
+                        <td colspan="13" class="py-8 text-center text-slate-400 text-sm">
+                            Henüz rapora eklenmiş bir hesaplama yok. Yukarıdaki formdan hesaplama yapıp <strong class="text-blue-600">+ RAPORLA</strong> butonuna tıklayın.
+                        </td>
+                    </tr>`;
+                mobileCards.innerHTML = `
+                    <div class="p-6 text-center text-slate-400 text-xs">
+                        Henüz rapora eklenmiş kayıt yok. Yukarıdan <strong class="text-blue-600">+ RAPORLA</strong> butonuna dokunun.
+                    </div>`;
+                tfoot.classList.add('hidden');
+                mobileSummary.classList.add('hidden');
+                return;
+            }
+
+            tbody.innerHTML = '';
+            mobileCards.innerHTML = '';
+            let sumAdet = 0, sumAlan = 0, sumMetre = 0, sumGram = 0, sumKg = 0, sumDolar = 0, sumTl = 0;
+
+            reportList.forEach((row, index) => {
+                sumAdet += row.adet;
+                sumAlan += row.toplamAlanM2;
+                sumMetre += row.toplamMetre;
+                sumGram += row.toplamGram;
+                sumKg += row.toplamKg;
+                sumDolar += row.toplamDolar;
+                sumTl += row.maliyetTl;
+
+                // Masaüstü Tablo Satırı
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-blue-50/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="py-2 px-3 border-r border-slate-200 font-bold text-slate-500">${index + 1}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 font-bold text-slate-900">${row.ebat}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-xs font-semibold">
+                        <span class="px-2 py-0.5 rounded ${row.sacakTipi.includes('PONPON') ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">
+                            ${row.sacakTipi}
+                        </span>
+                    </td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right font-bold">${row.adet}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right">${row.toplamAlanM2.toFixed(2)}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right font-semibold">${row.toplamMetre.toFixed(2)}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right">${row.toplamGram.toFixed(2)}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right text-slate-600">${row.toplamKg.toFixed(3)}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right text-slate-500">${row.dolarKuru.toFixed(2)}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right font-bold text-blue-700">$${row.toplamDolar.toFixed(2)}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right font-extrabold text-emerald-700">${row.maliyetTl.toFixed(2)} ₺</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right font-bold text-indigo-700">${row.m2BasiTl.toFixed(2)} ₺</td>
+                    <td class="py-2 px-3 text-center">
+                        <button onclick="removeReportItem(${row.id})" class="text-red-500 hover:text-red-700 font-bold px-1.5 py-0.5 rounded hover:bg-red-50 cursor-pointer" title="Satırı Sil">✕</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                // Mobil Rapor Kartı (iPhone'da sıfır yatay kaydırma)
+                const mCard = document.createElement('div');
+                mCard.className = 'p-3.5 bg-white space-y-2';
+                mCard.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="text-xs font-extrabold text-slate-400">#${index + 1}</span>
+                                <span class="font-extrabold text-sm text-slate-900">${row.ebat}</span>
+                                <span class="text-[11px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">${row.adet} Adet</span>
+                            </div>
+                            <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${row.sacakTipi.includes('PONPON') ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">
+                                ${row.sacakTipi}
+                            </span>
+                        </div>
+                        <button onclick="removeReportItem(${row.id})" class="text-red-500 hover:bg-red-50 w-8 h-8 rounded-lg flex items-center justify-center font-bold shrink-0" aria-label="Sil">✕</button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+                        <div>
+                            <span class="block text-[10px] text-slate-500">Uzunluk / Gr</span>
+                            <strong class="text-slate-800">${row.toplamMetre.toFixed(2)} mt</strong>
+                            <span class="block text-[10px] text-slate-500">${row.toplamGram.toFixed(0)} gr (${row.toplamKg.toFixed(3)} kg)</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] text-slate-500">Toplam ($)</span>
+                            <strong class="text-blue-700 text-sm">$${row.toplamDolar.toFixed(2)}</strong>
+                            <span class="block text-[10px] text-slate-500">Kur: ${row.dolarKuru.toFixed(2)}₺</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-[10px] text-slate-500">Maliyet (TL)</span>
+                            <strong class="text-emerald-700 text-sm">${row.maliyetTl.toFixed(2)} ₺</strong>
+                            <span class="block text-[10px] font-bold text-indigo-700">m²: ${row.m2BasiTl.toFixed(2)} ₺</span>
+                        </div>
+                    </div>
+                `;
+                mobileCards.appendChild(mCard);
+            });
+
+            const avgM2Tl = sumAlan > 0 ? (sumTl / sumAlan) : 0;
+
+            document.getElementById('footAdet').textContent = sumAdet;
+            document.getElementById('footAlan').textContent = `${sumAlan.toFixed(2)} m²`;
+            document.getElementById('footMetre').textContent = `${sumMetre.toFixed(2)} mt`;
+            document.getElementById('footGram').textContent = `${sumGram.toFixed(2)} gr`;
+            document.getElementById('footKg').textContent = `${sumKg.toFixed(3)} kg`;
+            document.getElementById('footDolar').textContent = `$${sumDolar.toFixed(2)}`;
+            document.getElementById('footTl').textContent = `${sumTl.toFixed(2)} ₺`;
+            document.getElementById('footM2Tl').textContent = `${avgM2Tl.toFixed(2)} ₺/m²`;
+
+            mobileSummary.innerHTML = `
+                <div class="flex justify-between font-extrabold text-slate-900 text-sm">
+                    <span>GENEL TOPLAM (${sumAdet} Adet / ${sumAlan.toFixed(2)} m²)</span>
+                    <span class="text-emerald-700">${sumTl.toFixed(2)} ₺</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                    <span>Toplam Saçak: <strong>${sumMetre.toFixed(2)} mt</strong> (${sumKg.toFixed(3)} kg)</span>
+                    <span>Toplam USD: <strong class="text-blue-700">$${sumDolar.toFixed(2)}</strong></span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                    <span>Ortalama m² Maliyeti:</span>
+                    <strong class="text-indigo-700">${avgM2Tl.toFixed(2)} ₺ / m²</strong>
+                </div>
+            `;
+
+            tfoot.classList.remove('hidden');
+            mobileSummary.classList.remove('hidden');
+        }
+
+            tbody.innerHTML = '';
+            let sumAdet = 0, sumAlan = 0, sumMetre = 0, sumGram = 0, sumKg = 0, sumDolar = 0, sumTl = 0;
+
+            reportList.forEach((row, index) => {
+                sumAdet += row.adet;
+                sumAlan += row.toplamAlanM2;
+                sumMetre += row.toplamMetre;
+                sumGram += row.toplamGram;
+                sumKg += row.toplamKg;
+                sumDolar += row.toplamDolar;
+                sumTl += row.maliyetTl;
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-blue-50/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="py-2 px-3 border-r border-slate-200 font-bold text-slate-500">${index + 1}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 font-bold text-slate-900">${row.ebat}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-xs font-semibold">
+                        <span class="px-2 py-0.5 rounded ${row.sacakTipi.includes('PONPON') ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">
+                            ${row.sacakTipi}
+                        </span>
+                    </td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right font-bold">${row.adet}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right">${row.toplamAlanM2.toFixed(2)}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right font-semibold">${row.toplamMetre.toFixed(2)}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right">${row.toplamGram.toFixed(2)}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right text-slate-600">${row.toplamKg.toFixed(3)}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right text-slate-500">${row.dolarKuru.toFixed(2)}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right font-bold text-blue-700">$${row.toplamDolar.toFixed(2)}</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right font-extrabold text-emerald-700">${row.maliyetTl.toFixed(2)} ₺</td>
+                    <td class="py-2 px-3 border-r border-slate-200 text-right font-bold text-indigo-700">${row.m2BasiTl.toFixed(2)} ₺</td>
+                    <td class="py-2 px-3 text-center">
+                        <button onclick="removeReportItem(${row.id})" class="text-red-500 hover:text-red-700 font-bold px-1.5 py-0.5 rounded hover:bg-red-50 cursor-pointer" title="Satırı Sil">✕</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const avgM2Tl = sumAlan > 0 ? (sumTl / sumAlan) : 0;
+
+            document.getElementById('footAdet').textContent = sumAdet;
+            document.getElementById('footAlan').textContent = `${sumAlan.toFixed(2)} m²`;
+            document.getElementById('footMetre').textContent = `${sumMetre.toFixed(2)} mt`;
+            document.getElementById('footGram').textContent = `${sumGram.toFixed(2)} gr`;
+            document.getElementById('footKg').textContent = `${sumKg.toFixed(3)} kg`;
+            document.getElementById('footDolar').textContent = `$${sumDolar.toFixed(2)}`;
+            document.getElementById('footTl').textContent = `${sumTl.toFixed(2)} ₺`;
+            document.getElementById('footM2Tl').textContent = `${avgM2Tl.toFixed(2)} ₺/m²`;
+
+            tfoot.classList.remove('hidden');
+        }
+
+        // Excel Uyumlu CSV İndirme (Türkçe noktalı virgül ayraçlı + UTF-8 BOM)
+        function exportReportCSV() {
+            if (reportList.length === 0) {
+                showToast('İndirilecek rapor kaydı bulunmuyor.', true);
+                return;
+            }
+
+            const headers = [
+                'Sıra', 'Ürün Ebatı', 'Saçak Tipi', 'Adet', 'Toplam Alan (m2)',
+                'Kullanılan Metre (mt)', 'Toplam Gram (gr)', 'Toplam KG',
+                'Dolar Kuru (TL)', 'Toplam ($)', 'Maliyet (TL)', 'M2 Maliyeti (TL)'
+            ];
+
+            const fmt = (num) => num.toFixed(2).replace('.', ',');
+            const fmt3 = (num) => num.toFixed(3).replace('.', ',');
+
+            const rows = reportList.map((r, i) => [
+                i + 1,
+                `"${r.ebat}"`,
+                `"${r.sacakTipi}"`,
+                r.adet,
+                fmt(r.toplamAlanM2),
+                fmt(r.toplamMetre),
+                fmt(r.toplamGram),
+                fmt3(r.toplamKg),
+                fmt(r.dolarKuru),
+                fmt(r.toplamDolar),
+                fmt(r.maliyetTl),
+                fmt(r.m2BasiTl)
+            ].join(';'));
+
+            const csvContent = '\uFEFF' + [headers.join(';'), ...rows].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Hali_Sacak_Maliyet_Raporu_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showToast('Rapor Excel (CSV) formatında indirildi.');
+        }
+
+        // Yeni Ebat Ekleme İşlemleri
+        function toggleNewRowForm() {
+            const el = document.getElementById('newRowContainer');
+            el.classList.toggle('hidden');
+        }
+
+        function addNewProduct() {
+            const ebat = document.getElementById('newEbat').value.trim().toUpperCase();
+            const uzunluk = parseFloat(document.getElementById('newUzunluk').value);
+            const ponponGr = parseFloat(document.getElementById('newPonponGr').value) || 0.045;
+            const sporGr = parseFloat(document.getElementById('newSporGr').value) || 0.025;
+            const ponponUsd = parseFloat(document.getElementById('newPonponUsd').value) || 8;
+            const sporUsd = parseFloat(document.getElementById('newSporUsd').value) || 2.5;
+
+            if (!ebat || isNaN(uzunluk) || uzunluk <= 0) {
+                showToast('Lütfen geçerli bir ebat ve saçak uzunluğu giriniz.', true);
+                return;
+            }
+
+            productData.push({ ebat, uzunluk, ponponGr, sporGr, ponponUsd, sporUsd });
+            localStorage.setItem('hali_sacak_verileri_v1', JSON.stringify(productData));
+
+            document.getElementById('newEbat').value = '';
+            document.getElementById('newUzunluk').value = '';
+            document.getElementById('newRowContainer').classList.add('hidden');
+
+            renderAll();
+            document.getElementById('urunEbati').selectedIndex = productData.length - 1;
+            onEbatChange();
+            showToast(`${ebat} başarıyla listeye eklendi.`);
+        }
+
+        function resetDefaultData() {
+            productData = JSON.parse(JSON.stringify(INITIAL_DATA));
+            localStorage.removeItem('hali_sacak_verileri_v1');
+            renderAll();
+            showToast('Referans tablo orijinal değerlerine döndürüldü.');
+        }
+
+        // Sayfa Yüklendiğinde Başlat
+        window.onload = function () {
+            renderAll();
+        };
+    </script>
+</body>
+</html>
